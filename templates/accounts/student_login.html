@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block navbar %}
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'student_login' %}">Connexion étudiant</a>
+</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card p-4">
+            <h4 class="text-center">Résultat étudiant</h4>
+
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <input type="text" name="matricule" class="form-control mb-3" placeholder="Matricule">
+
+                <button class="btn btn-primary w-100">Voir résultat</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

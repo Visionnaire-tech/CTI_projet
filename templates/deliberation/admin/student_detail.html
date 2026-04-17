@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+
+{% if request.user.is_superuser %}
+     <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_home' %}">Dashboard</a>
+    </li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+<h3>{{ student.nom }}</h3>
+
+{% for ue in result.ues %}
+<div class="card mb-3">
+
+    <div class="card-header">
+        {{ ue.ue.name }} - Moyenne: {{ ue.moyenne }}
+
+        {% if ue.valide %}
+            <span class="text-success">✔</span>
+        {% else %}
+            <span class="text-danger">✘</span>
+        {% endif %}
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Cours</th>
+                <th>Note</th>
+                <th>Crédit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for n in ue.notes %}
+            <tr>
+                <td>{{ n.course.name }}</td>
+                <td>{{ n.note }}</td>
+                <td>{{ n.credit }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endfor %}
+
+<div class="alert alert-info">
+    Moyenne: {{ result.moyenne }} <br>
+    Crédits: {{ result.credits }} <br>
+    Décision: <strong>{{ result.decision }}</strong>
+</div>
+
+</div>
+{% endblock %}

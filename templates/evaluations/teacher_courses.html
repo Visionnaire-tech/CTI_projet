@@ -1,0 +1,24 @@
+{% block navbar %}
+{% block navbar %}
+{% if request.user.is_authenticated and request.user.teacher_profile %}
+    <li><a href="{% url 'teacher_courses' %}">Mes cours</a></li>
+    <li><a href="{% url 'logout' %}">Déconnexion</a></li>
+{% endif %}
+{% endblock %}
+{% block navbar %}
+{% if request.user.is_authenticated and request.user.teacher_profile %}
+    <li><a href="{% url 'teacher_courses' %}">Mes cours</a></li>
+    <li><a href="{% url 'logout' %}">Déconnexion</a></li>
+{% endif %}
+{% endblock %}
+
+<h2>Mes cours</h2>
+
+<ul>
+    {% for a in assignments %}
+        <li>
+            {{ a.course.name }} (Groupe {{ a.groupe }})
+            <a href="{% url 'saisir_notes' a.id %}">Saisir notes</a>
+        </li>
+    {% endfor %}
+</ul>

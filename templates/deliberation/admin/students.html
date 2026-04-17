@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3 class="text-center mb-4">👨‍🎓 Gestion des Étudiants</h3>
+
+    <!-- 🔎 FILTRES -->
+    <form method="GET" class="card p-3 mb-4 shadow-sm">
+
+        <div class="row">
+
+            <div class="col-md-4">
+                <label>Promotion</label>
+                <select name="promotion" class="form-control">
+                    <option value="">-- Toutes --</option>
+                    {% for p in promotions %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label>Département</label>
+                <select name="department" class="form-control">
+                    <option value="">-- Tous --</option>
+                    {% for d in departments %}
+                        <option value="{{ d.id }}">{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label>Section</label>
+                <select name="section" class="form-control">
+                    <option value="">-- Toutes --</option>
+                    {% for s in sections %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3 w-100">
+            🔍 Filtrer
+        </button>
+
+    </form>
+
+    <!-- 📊 TABLE -->
+    <div class="table-responsive">
+
+        <table class="table table-bordered table-striped text-center">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>Matricule</th>
+                    <th>Nom</th>
+                    <th>Postnom</th>
+                    <th>Prénom</th>
+                    <th>Promotion</th>
+                    <th>Moyenne</th>
+                    <th>Crédits</th>
+                    <th>Décision</th>
+                    <th>Détails</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for r in results %}
+                <tr>
+
+                    <td>{{ r.student.matricule }}</td>
+                    <td>{{ r.student.nom }}</td>
+                    <td>{{ r.student.postnom }}</td>
+                    <td>{{ r.student.prenom }}</td>
+
+                    <td>{{ r.student.promotion.name }}</td>
+
+                    <td>{{ r.moyenne }}</td>
+
+                    <td>{{ r.credits }}</td>
+
+                    <td>
+                        {% if r.decision == "ADM" %}
+                            <span class="text-success fw-bold">ADM</span>
+                        {% elif r.decision == "AJ" %}
+                            <span class="text-warning fw-bold">AJ</span>
+                        {% else %}
+                            <span class="text-danger fw-bold">DEF</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'admin_student_detail' r.student.id %}"
+                           class="btn btn-sm btn-info">
+                            Voir
+                        </a>
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9">Aucun étudiant trouvé</td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

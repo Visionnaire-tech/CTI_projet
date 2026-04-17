@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+
+{% if request.user.is_superuser %}
+     <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_home' %}">Dashboard</a>
+    </li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h2>Résultat importation</h2>
+
+<p>Succès : {{ success }}</p>
+<p>Erreurs : {{ errors }}</p>
+
+<a href="/payments/import/">Retour</a>
+
+{% endblock %}

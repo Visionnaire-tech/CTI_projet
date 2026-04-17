@@ -1,0 +1,29 @@
+
+{% extends 'base.html' %}
+{% block navbar %}
+
+{% endblock %}
+{% block content %}
+
+<h3 class="mb-4">Mes cours</h3>
+
+<div class="row">
+    {% for a in assignments %}
+    <div class="col-md-4 mb-3">
+        <div class="card p-3">
+            <h5>{{ a.course.name }}</h5>
+            <p>Promotion : {{ a.course.promotion }}
+                (Groupe {{ a.groupe }})
+            </p>
+
+            <a href="{% url 'saisir_notes' a.id %}" class="btn btn-primary">
+                Saisir les notes
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <p>Aucun cours assigné</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

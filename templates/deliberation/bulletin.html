@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h3 class="mb-4">Bulletin académique</h3>
+
+<div class="card p-3 mb-4">
+    <p><strong>Nom :</strong> {{ student.nom }} {{ student.prenom }}</p>
+    <p><strong>Matricule :</strong> {{ student.matricule }}</p>
+</div>
+
+{% for ue in result.ues %}
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        UE : {{ ue.ue_code }} | Moyenne : {{ ue.moyenne }} | Crédit : {{ ue.credit }}
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Cours</th>
+                    <th>Note</th>
+                    <th>Crédit</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in ue.courses %}
+                <tr>
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.note|default:"ABS" }}</td>
+                    <td>{{ c.credit }}</td>
+                    <td>
+                        {% if c.statut == "Validé" %}
+                            <span class="badge bg-success">Validé</span>
+                        {% elif c.statut == "Échec" %}
+                            <span class="badge bg-danger">Échec</span>
+                        {% else %}
+                            <span class="badge bg-warning">Absent</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+
+<div class="card p-3">
+    <h4>Résumé</h4>
+    <p><strong>Moyenne générale :</strong> {{ result.moyenne }}</p>
+    <p><strong>Crédits validés :</strong> {{ result.credits }}</p>
+    <p><strong>Décision :</strong> 
+        <span class="badge bg-primary">{{ result.decision }}</span>
+    </p>
+</div>
+
+{% endblock %}

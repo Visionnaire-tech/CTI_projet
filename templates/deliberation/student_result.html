@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block navbar %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'student_dashboard' %}">Résultat</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'logout' %}">Déconnexion</a>
+    </li>
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+
+<h3>Résultat détaillé</h3>
+
+{% for ue in ues %}
+<div class="card mb-3">
+    <div class="card-header">
+        <strong>{{ ue.ue.name }}</strong> 
+        | Moyenne: {{ ue.moyenne }}
+
+        {% if ue.valide %}
+            <span class="text-success">✔ Validé</span>
+        {% else %}
+            <span class="text-danger">✘ Non validé</span>
+        {% endif %}
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Cours</th>
+                <th>Note</th>
+                <th>Crédit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for n in ue.notes %}
+            <tr>
+                <td>{{ n.course.name }}</td>
+                <td>{{ n.note }}</td>
+                <td>{{ n.credit }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+
+<div class="alert alert-info">
+    Moyenne générale : {{ moyenne }} <br>
+    Crédits validés : {{ credits }} <br>
+    Décision : <strong>{{ decision }}</strong>
+</div>
+
+</div>
+{% endblock %}

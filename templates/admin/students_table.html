@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+{% if request.user.is_superuser %}
+     <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_home' %}">Dashboard</a>
+    </li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h2>Liste des étudiants</h2>
+
+<table border="1">
+    <tr>
+        <th>Matricule</th>
+        <th>Nom</th>
+        <th>Section</th>
+        <th>Promotion</th>
+        <th>Moyenne</th>
+        <th>Paiement</th>
+    </tr>
+
+    {% for row in data %}
+    <tr>
+        <td>{{ row.student.matricule }}</td>
+        <td>{{ row.student.nom }}</td>
+        <td>{{ row.student.section }}</td>
+        <td>{{ row.student.promotion }}</td>
+        <td>{{ row.moyenne }}</td>
+        <td>
+            {% if row.student.is_active %}
+                ✅
+            {% else %}
+                ❌
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

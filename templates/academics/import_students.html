@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h3>Importer les étudiants</h3>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" class="form-control mb-3">
+    <button class="btn btn-primary">Importer</button>
+</form>
+
+{% endblock %}

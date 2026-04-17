@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Saisie des notes - {{ course.name }}{% endblock %}
+{% block navbar %}
+{% if request.user.is_authenticated and request.user.teacher_profile %}
+    <li><a href="{% url 'teacher_courses' %}">Mes cours</a></li>
+    <li><a href="{% url 'logout' %}">Déconnexion</a></li>
+{% endif %}
+{% endblock %}
+{% block content %}
+<h3 class="mb-4">Saisie des notes - {{ course.name }}</h3>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Matricule</th>
+                    <th>Nom</th>
+                    <th>TP</th>
+                    <th>Interro</th>
+                    <th>Examen</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.matricule }}</td>
+                    <td>{{ student.nom }} {{ student.prenom }}</td>
+
+                    <td>
+                        <input type="number" step="0.1" min="0" max="20"
+                               name="tp_{{ student.id }}"
+                               class="form-control">
+                    </td>
+
+                    <td>
+                        <input type="number" step="0.1" min="0" max="20"
+                               name="interro_{{ student.id }}"
+                               class="form-control">
+                    </td>
+
+                    <td>
+                        <input type="number" step="0.1" min="0" max="20"
+                               name="examen_{{ student.id }}"
+                               class="form-control">
+                    </td>
+
+                    <td>
+                        <select name="statut_{{ student.id }}" class="form-control">
+                            <option value="normal">Normal</option>
+                            <option value="ABS">Absent</option>
+                        </select>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+        {% if not already_submitted or request.user.is_superuser %}
+            <button type="submit" name="action" value="save" class="btn btn-warning">
+                💾 Enregistrer
+            </button>
+
+            <button type="submit" name="action" value="submit" class="btn btn-success">
+                📤 Envoyer (Bloquer)
+            </button>
+        {% else %}
+            <div class="alert alert-danger">
+                🔒 Notes déjà envoyées - modification impossible
+            </div>
+        {% endif %}
+</form>
+{% endblock %}

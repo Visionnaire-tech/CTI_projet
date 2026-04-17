@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+{% if request.user.is_superuser %}
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'admin_home' %}">Dashboard</a>
+</li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <h3 class="text-center fw-bold">
+        🎓 DÉLIBÉRATION - {{ promotion.name }}
+    </h3>
+
+    <div class="text-center mb-3">
+        <a href="{% url 'export_excel' promotion.id %}" class="btn btn-success">
+            📊 Export Excel
+        </a>
+    </div>
+
+    {% if results %}
+
+    <div class="table-responsive">
+        <table class="table table-bordered text-center align-middle">
+
+            <!-- ================= HEADER ================= -->
+            <thead class="table-dark">
+
+                <!-- LIGNE UE -->
+                <tr>
+                    <th rowspan="3">Nom</th>
+                    <th rowspan="3">Postnom</th>
+                    <th rowspan="3">Prénom</th>
+
+                    {% for ue in results.0.ues %}
+                        <th colspan="{{ ue.courses|length|add:1 }}">
+                            {{ ue.ue }}
+                        </th>
+                    {% endfor %}
+
+                    <th rowspan="3">Moyenne Générale</th>
+                    <th rowspan="3">Décision</th>
+                </tr>
+
+                <!-- LIGNE COURS -->
+                <tr>
+                    {% for ue in results.0.ues %}
+                        {% for c in ue.courses %}
+                            <th colspan="3">{{ c.course }}</th>
+                        {% endfor %}
+                        <th>Moy UE</th>
+                    {% endfor %}
+                </tr>
+
+                <!-- LIGNE NOTE / CREDIT / TNP -->
+                <tr>
+                    {% for ue in results.0.ues %}
+                        {% for c in ue.courses %}
+                            <th>Note</th>
+                            <th>Cr</th>
+                            <th>TNP</th>
+                        {% endfor %}
+                        <th>-</th>
+                    {% endfor %}
+                </tr>
+
+            </thead>
+
+            <!-- ================= BODY ================= -->
+            <tbody>
+
+                {% for r in results %}
+                <tr>
+                    <td>{{ r.student.nom }}</td>
+                    <td>{{ r.student.postnom }}</td>
+                    <td>{{ r.student.prenom }}</td>
+
+                    {% for ue in r.ues %}
+                        {% for c in ue.courses %}
+                            <td>{{ c.note }}</td>
+                            <td>{{ c.credit }}</td>
+                            <td>{{ c.tnp }}</td>
+                        {% endfor %}
+                        <td class="fw-bold">{{ ue.moyenne }}</td>
+                    {% endfor %}
+
+                    <td class="fw-bold">{{ r.moyenne }}</td>
+                    <td class="fw-bold">{{ r.decision }}</td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+    {% else %}
+        <div class="alert alert-danger text-center">
+            ⚠️ Aucune donnée disponible pour cette promotion
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

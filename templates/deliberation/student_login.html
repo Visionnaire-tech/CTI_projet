@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block navbar %}
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'student_login' %}">Connexion étudiant</a>
+</li>
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h3>Connexion Étudiant</h3>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label>Matricule</label>
+            <input type="text" name="matricule" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Se connecter
+        </button>
+    </form>
+</div>
+{% endblock %}

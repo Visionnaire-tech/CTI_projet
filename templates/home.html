@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<div class="text-center mt-5">
+
+    <h1>Bienvenue sur CTI</h1>
+    <p class="lead">Plateforme de gestion académique et délibération</p>
+
+    <hr>
+
+    <div class="mt-4">
+        <a href="{% url 'student_login' %}" class="btn btn-success m-2">
+            🎓 Connexion Étudiant
+        </a>
+
+        <a href="{% url 'login' %}" class="btn btn-primary m-2">
+            👨‍🏫 Connexion Enseignant
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}

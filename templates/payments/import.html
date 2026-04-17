@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block navbar %}
+
+{% if request.user.is_superuser %}
+     <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_home' %}">Dashboard</a>
+    </li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3>Importer les étudiants</h3>
+
+    <!-- 🔥 ICI TU AJOUTES LE MESSAGE -->
+    {% if success %}
+    <div class="alert alert-success">
+        {{ success }}
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label>Promotion</label>
+        <select name="promotion" class="form-control" required>
+            {% for p in promotions %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Département</label>
+        <select name="department" class="form-control" required>
+            {% for d in departments %}
+                <option value="{{ d.id }}">{{ d.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Vacation</label>
+        <select name="vacation" class="form-control" required>
+            <option value="jour">Jour</option>
+            <option value="soir">Soir</option>
+        </select>
+
+        <input type="file" name="file" class="form-control" accept=".xlsx" required>
+
+        <button type="submit" class="btn btn-primary mt-3">
+            Importer
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

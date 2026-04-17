@@ -1,0 +1,9 @@
+body {
+    background-color: #f5f6fa;
+}
+
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}

@@ -1,0 +1,35 @@
+
+{% block content %}
+<div class="container mt-4">
+
+<h3>Admin - Filtres</h3>
+
+<form method="get" action="{% url 'admin_students' %}">
+
+    <select name="promotion" class="form-control mb-2">
+        <option value="">Promotion</option>
+        {% for p in promotions %}
+        <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="section" class="form-control mb-2">
+        <option value="">Section</option>
+        {% for s in sections %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="department" class="form-control mb-2">
+        <option value="">Département</option>
+        {% for d in departments %}
+        <option value="{{ d.id }}">{{ d.name }}</option>
+        {% endfor %}
+    </select>
+
+    <button class="btn btn-primary">Afficher</button>
+
+</form>
+
+</div>
+{% endblock %}
