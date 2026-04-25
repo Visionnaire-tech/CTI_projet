@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-1rpli!lkioa6+b8x&r&$fd%yrl4vqc60zakat326w!@)df2$ei
 #ALLOWED_HOSTS = []
 DEBUG = False
 
-ALLOWED_HOSTS = ['hec-cti.onrender.com']
+ALLOWED_HOSTS = ['cti-project.onrender.com']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://hec-cti.onrender.com'
