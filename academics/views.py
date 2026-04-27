@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from courses.models import Teacher, Course
 from deliberation.views import student_result
 from evaluations.models import Grade
+from deliberation.services import calcul_deliberation
 
 
 def normalize(col):
@@ -14,25 +15,36 @@ def normalize(col):
 
 def import_students(request):
     if request.method == 'POST':
-        file = request.FILES['file']
+        file = request.FILES.get('file')
+
+        if not file:
+            return render(request, 'academics/import_students.html', {
+                "error": "Aucun fichier envoyé"
+            })
 
         df = pd.read_excel(file)
-
-        # normaliser colonnes
         df.columns = [normalize(c) for c in df.columns]
+
+        created = 0
 
         for _, row in df.iterrows():
 
-            matricule = row.get('matricule') or row.get('id')
-            nom = row.get('nom') or row.get('name')
-            prenom = row.get('prenom') or row.get('firstname')
+            matricule = str(row.get('matricule') or '').strip()
+            nom = str(row.get('nom') or '').strip()
+            postnom = str(row.get('postnom') or '').strip()
+            prenom = str(row.get('prenom') or '').strip()
 
-            promo_name = row.get('promotion') or row.get('classe')
-            dept_name = row.get('department') or row.get('section')
+            promo_name = str(row.get('promotion') or '').strip()
+            dept_name = str(row.get('department') or '').strip()
+            section_name = str(row.get('section') or '').strip()
+
+            if not matricule or not promo_name:
+                continue
 
             try:
-                promo = Promotion.objects.get(name=promo_name)
-                dept = Department.objects.get(name=dept_name)
+                section = Section.objects.get(name__iexact=section_name)
+                department = Department.objects.get(name__iexact=dept_name, section=section)
+                promotion = Promotion.objects.get(name__iexact=promo_name, department=department)
             except:
                 continue
 
@@ -40,16 +52,22 @@ def import_students(request):
                 matricule=matricule,
                 defaults={
                     'nom': nom,
+                    'postnom': postnom,
                     'prenom': prenom,
-                    'promotion': promo,
-                    'department': dept,
-                    'vacation': row.get('vacation', 'Jour')
+                    'promotion': promotion,
+                    'department': department,
+                    'vacation': str(row.get('vacation') or 'jour').lower()
                 }
             )
 
-        return render(request, 'academics/import_success.html')
+            created += 1
+
+        return render(request, 'academics/import_success.html', {
+            "count": created
+        })
 
     return render(request, 'academics/import_students.html')
+
 
 def admin_required(user):
     return user.is_superuser
@@ -76,15 +94,18 @@ def admin_dashboard(request):
     })
 
 
+from django.db.models import Prefetch
+
 def admin_deliberation_view(request):
 
     promotion_id = request.GET.get("promotion")
     department_id = request.GET.get("department")
     section_id = request.GET.get("section")
 
-    students = Student.objects.all()
+    students = Student.objects.select_related(
+        "promotion", "department", "department__section"
+    )
 
-    # 🔍 FILTRES
     if promotion_id:
         students = students.filter(promotion_id=promotion_id)
 
@@ -94,42 +115,53 @@ def admin_deliberation_view(request):
     if section_id:
         students = students.filter(department__section_id=section_id)
 
-    ues = UE.objects.all().prefetch_related('course_set')
+    courses = Course.objects.select_related("ue").filter(
+        promotion_id=promotion_id
+    )
+
+    grades = Grade.objects.filter(
+        student__in=students,
+        course__in=courses
+    ).select_related("course", "course__ue", "student")
 
     results = []
 
     for student in students:
-        total_tnp = 0
+
         total_credit = 0
+        total_tnp = 0
+        validated_credit = 0
+        dettes = []
 
-        for ue in ues:
-            for course in ue.course_set.all():
+        for course in courses:
 
-                grade = Grade.objects.filter(student=student, course=course).first()
+            grade = grades.filter(student=student, course=course).first()
 
-                note = grade.note_finale if grade and grade.note_finale else 0
-                credit = course.credit
-                tnp = note * credit
+            note = grade.note_finale if grade and grade.note_finale else 0
+            credit = course.credit
 
-                total_tnp += tnp
-                total_credit += credit
+            if note >= 10:
+                validated_credit += credit
+                total_tnp += note * credit
+            else:
+                dettes.append(course)
 
-        # 📊 MOYENNE
+            total_credit += credit
+
         moyenne = total_tnp / total_credit if total_credit else 0
 
-        # 🎯 DECISION
-        if moyenne >= 10:
-            decision = "ADM"
-        elif moyenne >= 8:
-            decision = "AJ"
+        # 🎯 LOGIQUE LMD
+        if validated_credit >= 45:
+            decision = "PA"
         else:
-            decision = "DEF"
+            decision = "PP"
 
         results.append({
             "student": student,
             "moyenne": round(moyenne, 2),
-            "credits": total_credit,  # ✅ AJOUT IMPORTANT
-            "decision": decision
+            "credits": validated_credit,
+            "decision": decision,
+            "dettes": dettes
         })
 
     return render(request, "deliberation/admin/students.html", {
@@ -140,11 +172,26 @@ def admin_deliberation_view(request):
     })
 
 def admin_student_detail(request, student_id):
-    student = get_object_or_404(Student, id=student_id)
-    return render(request, 'deliberation/admin/student_detail.html', {
-        'student': student
-    })
 
+    student = get_object_or_404(Student, id=student_id)
+
+    result = calcul_deliberation(student)
+
+    # 🔥 récupérer dettes (cours < 10)
+    dettes = []
+    for ue in result['ues']:
+        for c in ue['courses']:
+            if c['note'] < 10:
+                dettes.append(c['course'])
+
+    return render(request, "deliberation/admin/student_detail.html", {
+        "student": student,
+        "ues": result['ues'],
+        "moyenne": result['moyenne'],
+        "credits_valides": result['credits'],
+        "decision": result['decision'],
+        "dettes": dettes
+    })
 
 def admin_courses(request):
     courses = Course.objects.all()

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block navbar %}
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'student_dashboard' %}">Résultat</a>
+        <a class="nav-link" href="{% url 'student_dashboard' %}">ACCUEIL</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="{% url 'logout' %}">Déconnexion</a>
@@ -34,7 +34,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for n in ue.notes %}
+            {% for n in ue.courses %}
             <tr>
                 <td>{{ n.course.name }}</td>
                 <td>{{ n.note }}</td>

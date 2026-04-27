@@ -8,11 +8,20 @@
 {% endif %}
 {% endblock %}
 {% block content %}
+
 <h3 class="mb-4">Saisie des notes - {{ course.name }}</h3>
+
+<!-- FORM IMPORT (SEUL) -->
+<form method="POST" action="{% url 'import_notes_excel' assignment.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" required class="form-control mb-2">
+    <button class="btn btn-info">📥 Importer Excel</button>
+</form>
+
+<hr>
 
 <form method="POST">
     {% csrf_token %}
-
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead class="table-dark">

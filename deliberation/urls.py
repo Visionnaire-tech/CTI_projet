@@ -5,7 +5,7 @@ from .views import custom_logout
 from deliberation.views import admin_deliberation_view
 from deliberation.excel import export_deliberation_excel
 from django.contrib.auth import views as auth_views
-from .views import admin_deliberation_view, student_login, student_dashboard, export_excel_view
+from .views import admin_deliberation_view, student_login, student_dashboard, export_excel_view, edit_student_grades
 
 urlpatterns = [
     path('password-reset/', auth_views.PasswordResetView.as_view(
@@ -23,7 +23,7 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
         template_name='accounts/password_reset_complete.html'
     ), name='password_reset_complete'),
-
+    path('admin/student/<int:student_id>/edit-grades/', edit_student_grades, name='edit_student_grades'),
     path('login/', views.student_login, name='student_login'),
     path('dashboard/', views.student_dashboard, name='student_dashboard'),
     path('result/', views.student_result, name='student_result'),

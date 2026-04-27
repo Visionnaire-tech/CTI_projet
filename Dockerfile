@@ -1,10 +1,17 @@
-FROM python:3.11
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+COPY requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
 COPY . .
 
-RUN pip install --upgrade pip
-RUN pip install django psycopg2-binary pandas openpyxl
+# Collect static files
+RUN python manage.py collectstatic --noinput
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "cti_project.wsgi:application", "--bind", "0.0.0.0:8000"]

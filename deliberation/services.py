@@ -1,15 +1,12 @@
 from evaluations.models import Grade
-
+PASS_MARK = 10
 ELIMINATION_NOTE = 5
-PASS_MARK = 11
-MIN_CREDITS = 55
-
+MIN_CREDITS = 30  # par semestre
 
 def calcul_deliberation(student):
     grades = Grade.objects.filter(student=student).select_related('course', 'course__ue')
 
     ue_data = {}
-
     total_points = 0
     total_coeff = 0
     total_credits = 0
@@ -22,8 +19,11 @@ def calcul_deliberation(student):
 
         note = g.note_finale or 0
         credit = course.credit
+        tnp = note * credit
 
-        tnp = note * credit  # 🔥 IMPORTANT
+        # 🔴 élimination directe
+        if note < ELIMINATION_NOTE:
+            elimination = True
 
         if ue.id not in ue_data:
             ue_data[ue.id] = {
@@ -47,13 +47,13 @@ def calcul_deliberation(student):
         total_points += tnp
         total_coeff += credit
 
-    # 🎯 calcul UE
+    # =====================
+    # 🎯 CALCUL UE
+    # =====================
     ue_results = []
 
-    for ue_id, data in ue_data.items():
-
+    for data in ue_data.values():
         moyenne = data['total_tnp'] / data['total_credit'] if data['total_credit'] else 0
-
         valide = moyenne >= PASS_MARK
 
         if valide:
@@ -63,13 +63,17 @@ def calcul_deliberation(student):
             'ue': data['ue'],
             'moyenne': round(moyenne, 2),
             'valide': valide,
-            'courses': data['courses']  # ✔ corrigé
+            'courses': data['courses']
         })
 
-    # 🎯 moyenne générale
+    # =====================
+    # 🎯 MOYENNE GENERALE
+    # =====================
     moyenne_generale = total_points / total_coeff if total_coeff else 0
 
-    # 🎯 décision
+    # =====================
+    # 🎯 DECISION LMD
+    # =====================
     if elimination:
         decision = "DEF"
     elif moyenne_generale >= PASS_MARK and total_credits >= MIN_CREDITS:

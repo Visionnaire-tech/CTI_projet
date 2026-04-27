@@ -5,6 +5,7 @@ from courses.models import Course ,CourseAssignment
 from .models import Grade
 from django.core.mail import send_mail
 from django.contrib import messages
+from django.db import transaction
 
 @login_required
 def saisir_notes(request, assignment_id):
@@ -72,7 +73,8 @@ def saisir_notes(request, assignment_id):
     return render(request, 'evaluations/saisir_notes.html', {
         'course': course,
         'students': students,
-        'already_submitted': already_submitted
+        'already_submitted': already_submitted,
+        'assignment': assignment
     })
 
 
@@ -133,3 +135,92 @@ def admin_notes(request):
     
 def home(request):
     return render(request, 'home.html')
+
+@login_required
+def import_notes_excel(request, assignment_id):
+    assignment = get_object_or_404(CourseAssignment, id=assignment_id)
+    course = assignment.course
+
+    # sécurité
+    if assignment.teacher.user != request.user:
+        return redirect("erreur")
+
+    if request.method == "POST":
+        file = request.FILES.get("file")
+
+        if not file:
+            messages.error(request, "Aucun fichier sélectionné")
+            return redirect("saisir_notes", assignment_id=assignment_id)
+
+        df = pd.read_excel(file)
+
+        # normalisation
+        df.columns = [c.strip().lower() for c in df.columns]
+
+        required_cols = ["matricule", "tp", "interro", "examen"]
+
+        for col in required_cols:
+            if col not in df.columns:
+                messages.error(request, f"Colonne manquante: {col}")
+                return redirect("saisir_notes", assignment_id=assignment_id)
+
+        students = Student.objects.filter(
+            promotion=course.promotion,
+            department=assignment.department
+        )
+
+        student_map = {s.matricule: s for s in students}
+
+        grades_to_update = []
+
+        with transaction.atomic():
+
+            for _, row in df.iterrows():
+
+                matricule = str(row.get("matricule", "")).strip()
+
+                student = None
+
+                # 🔥 1. PRIORITÉ → MATRICULE
+                if matricule:
+                    student = student_map.get(matricule)
+
+                # 🔥 2. BACKUP → NOM COMPLET
+                if not student:
+                    nom = str(row.get("nom", "")).strip().lower()
+                    postnom = str(row.get("postnom", "")).strip().lower()
+                    prenom = str(row.get("prenom", "")).strip().lower()
+
+                    student = Student.objects.filter(
+                        nom__iexact=nom,
+                        postnom__iexact=postnom,
+                        prenom__iexact=prenom,
+                        promotion=course.promotion,
+                        department=assignment.department
+                    ).first()
+
+                # ❌ SI TOUJOURS RIEN → IGNORER
+                if not student:
+                    continue
+
+                grade.tp = float(row.get("tp", 0) or 0)
+                grade.interro = float(row.get("interro", 0) or 0)
+                grade.examen = float(row.get("examen", 0) or 0)
+
+                grade.calculer_note()
+
+                grades_to_update.append(grade)
+
+            Grade.objects.bulk_update(
+                grades_to_update,
+                ["tp", "interro", "examen", "note_finale"]
+            )
+
+        messages.success(request, "Importation réussie")
+        return redirect("saisir_notes", assignment_id=assignment_id)
+
+    return redirect("saisir_notes", assignment_id=assignment_id)
+
+def validate_note(interro, tp, examen):
+    if interro > 5 or tp > 5 or examen > 10:
+        raise ValueError("Note invalide selon norme LMD")

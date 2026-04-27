@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% load custom_tags %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3 class="text-center mb-4">
+         Modification des notes
+    </h3>
+
+    <h5 class="text-center mb-4">
+        {{ student.nom }} {{ student.postnom }} {{ student.prenom }}
+    </h5>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <table class="table table-bordered text-center">
+            <thead>
+                <tr>
+                    <th>UE</th>
+                    <th>Cours</th>
+                    <th>TP</th>
+                    <th>Interro</th>
+                    <th>Examen</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for course in courses %}
+                {% with grade=grades|get_item:course.id %}
+                <tr>
+                    <td>{{ course.ue.name }}</td>
+                    <td>{{ course.name }}</td>
+
+                    <td>
+                        <input type="number" step="0.1"
+                            name="tp_{{ course.id }}"
+                            value="{{ grade.tp|default:'' }}"
+                            class="form-control">
+                    </td>
+
+                    <td>
+                        <input type="number" step="0.1"
+                            name="interro_{{ course.id }}"
+                            value="{{ grade.interro|default:'' }}"
+                            class="form-control">
+                    </td>
+
+                    <td>
+                        <input type="number" step="0.1"
+                            name="examen_{{ course.id }}"
+                            value="{{ grade.examen|default:'' }}"
+                            class="form-control">
+                    </td>
+
+                    <td>
+                        <select name="statut_{{ course.id }}" class="form-control">
+                            <option value="normal" {% if grade.statut == "normal" %}selected{% endif %}>Normal</option>
+                            <option value="DETTE" {% if grade.statut == "DETTE" %}selected{% endif %}>Dette</option>
+                            <option value="ABS" {% if grade.statut == "ABS" %}selected{% endif %}>Absent</option>
+                        </select>
+                    </td>
+
+                </tr>
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button class="btn btn-success w-100">
+            💾 Enregistrer
+        </button>
+    </form>
+
+</div>
+
+{% endblock %}

@@ -9,7 +9,23 @@
 {% endblock %}
 
 {% block content %}
+<style>
+.table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #000;
+    color: white;
+}
 
+.table thead tr:nth-child(2) th {
+    top: 40px;
+}
+
+.table thead tr:nth-child(3) th {
+    top: 80px;
+}
+</style>
 <div class="container-fluid">
 
     <h3 class="text-center fw-bold">

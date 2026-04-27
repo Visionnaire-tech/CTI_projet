@@ -12,48 +12,56 @@
 {% block content %}
 <div class="container mt-4">
 
-<h3>{{ student.nom }}</h3>
+    <h3>{{ student.nom }} {{ student.prenom }}</h3>
 
-{% for ue in result.ues %}
+    <p>Moyenne : {{ moyenne }}</p>
+    <p>Crédits validés : {{ credits_valides }}/{{ credits_total }}</p>
+
+    <a href="{% url 'edit_student_grades' student.id %}" class="btn btn-warning mb-3">
+            Modifier toutes les notes
+    </a>
+
+    <h4>📚 Détail par UE</h4>
+
+{% for ue in ues %}
 <div class="card mb-3">
-
     <div class="card-header">
-        {{ ue.ue.name }} - Moyenne: {{ ue.moyenne }}
+        <strong>{{ ue.ue.name }}</strong> 
+        | Moyenne: {{ ue.moyenne }}
 
         {% if ue.valide %}
-            <span class="text-success">✔</span>
+            <span class="text-success">✔ Validé</span>
         {% else %}
-            <span class="text-danger">✘</span>
+            <span class="text-danger">✘ Non validé</span>
         {% endif %}
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Cours</th>
-                <th>Note</th>
-                <th>Crédit</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for n in ue.notes %}
-            <tr>
-                <td>{{ n.course.name }}</td>
-                <td>{{ n.note }}</td>
-                <td>{{ n.credit }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <table class="table table-bordered">
+        <tr>
+            <th>Cours</th>
+            <th>Note</th>
+            <th>Crédit</th>
+        </tr>
 
+        {% for c in ue.courses %}
+        <tr>
+            <td>{{ c.course.name }}</td>
+            <td>{{ c.note }}</td>
+            <td>{{ c.credit }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>
 {% endfor %}
 
-<div class="alert alert-info">
-    Moyenne: {{ result.moyenne }} <br>
-    Crédits: {{ result.credits }} <br>
-    Décision: <strong>{{ result.decision }}</strong>
-</div>
+    <h4> Dettes</h4>
+    <ul>
+    {% for d in dettes %}
+        <li>{{ d.name }}</li>
+    {% empty %}
+        <li>Aucune dette</li>
+    {% endfor %}
+    </ul>
 
 </div>
 {% endblock %}
